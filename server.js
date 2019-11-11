@@ -5,7 +5,7 @@ var mongoose = require("mongoose");
 var axios = require("axios");
 var cheerio = require("cheerio");
 
-// var db = require('./models')
+var db = require("./models")
 
 var PORT = 3000;
 
@@ -28,42 +28,88 @@ app.get("/scrape", function(request, reply) {
      
       var $ = cheerio.load(response.data);
 
-      $(".review-collection-fragment").each(function(i, element) {
+      $(".reviews-page__contents").each(function(i, element) {
         // Save an empty result object
-        var result = {
-            link: "https://pitchfork.com/" + $(this).children(".fragment-list").children(".review").children("a").attr("href"),
-            image: $(this).children(".fragment-list").children(".review").children("a").children("review__artwork artwork").children("img").attr("src"),
-            artist: $(this).children(".fragment-list").children(".review").children("a").children("review__title").children("ul").children("li").text(),
-            album: $(this).children(".fragment-list").children(".review").children("a").children("review__title").children("h2").text(),
-            genre: $(this).children(".fragment-list").children(".review").children("a").children("review__meta").children("h2").text(),
-            reviewer: ,
-            date:
-        };
+        var result = {}
   
         // Add the text and href of every link, and save them as properties of the result object
-        result.title = $(this)
-          .children("a")
-          .text();
-        result.link = $(this)
-          .children("a")
-          .attr("href");
+        result.artist = $(this)
+        .find(".review__title-artist")
+        .children("li")
+        .text();
 
-  
-        // Create a new Article using the `result` object built from scraping
-    //     db.Article.create(result)
-    //       .then(function(dbArticle) {
-    //         // View the added result in the console
-    //         console.log(dbArticle);
-    //       })
-    //       .catch(function(err) {
-    //         // If an error occurred, log it
-    //         console.log(err);
-    //       });
+        result.album = $(this)
+        .find(".review__title-album")
+        .text();
+
+        result.genre = $(this)
+        .find(".genre-list__link")
+        .text();
+
+        result.image = $(this)
+        .find(".review__artwork")
+        .find("img")
+        .attr("src");
+
+        result.link = "https://pitchfork.com/" + $(this)
+        .find(".review")
+        .children("a")
+        .attr("href");
+
+        result.author = $(this)
+        .find(".authors")
+        .find(".display-name")
+        .text();
+
+        result.date = $(this)
+        .find(".pub-date")
+        .text();
+
+        db.Review.create(result)
+          .then(function(dbReview) {
+            // View the added result in the console
+            console.log(dbReview);
+          })
+          .catch(function(err) {
+            // If an error occurred, log it
+            console.log(err);
+          });
       });
   
       // Send a message to the client
-      reply.send(result);
+      reply.json(result);
     });
+  });
+
+  app.get("/reviews", function(request, reply) {
+    // TODO: Finish the route so it grabs all of the articles
+    db.Review.find({})
+    .then(function(dbReview){
+      reply.json(dbReview)
+    })
+    .catch(function(error){
+      reply.json(error);
+    })
+  });
+
+  app.get("/articles/:id", function(request, reply) {
+
+    db.Review.find({$set: {_id: request.params.id}})
+    .populate("note")
+    .then(function(dbReview){
+      reply.json(dbReview)
+    })
+    .catch(function(error){
+      reply.json(error);
+    })
+  });
+
+  app.post("/articles/:id", function(request, reply) {
+
+    db.Note.create(request.body)
+    .then(function(dbNote){
+      return db.Article.findOneAndUpdate({_id: request.params.id}, {$push: {notes: dbNote._id}});
+    })
   });
 
   app.listen(PORT, function() {
