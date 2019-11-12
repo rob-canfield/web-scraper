@@ -28,11 +28,10 @@ app.get("/scrape", function(request, reply) {
      
       var $ = cheerio.load(response.data);
 
-      $(".reviews-page__contents").each(function(i, element) {
-        // Save an empty result object
+      $(".review").each(function(i, element) {
+       
         var result = {}
-  
-        // Add the text and href of every link, and save them as properties of the result object
+
         result.artist = $(this)
         .find(".review__title-artist")
         .children("li")
@@ -67,8 +66,8 @@ app.get("/scrape", function(request, reply) {
 
         db.Review.create(result)
           .then(function(dbReview) {
-            // View the added result in the console
             console.log(dbReview);
+            reply.send("it's working")
           })
           .catch(function(err) {
             // If an error occurred, log it
@@ -76,8 +75,7 @@ app.get("/scrape", function(request, reply) {
           });
       });
   
-      // Send a message to the client
-      reply.json(result);
+      
     });
   });
 
