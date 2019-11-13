@@ -33,6 +33,10 @@ var ReviewSchema = new Schema({
     date: {
         type: String,
         required: true
+    },
+    note: {
+        type: Schema.Types.ObjectId,
+        ref: "Note"
     }
 });
 

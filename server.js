@@ -7,7 +7,7 @@ var cheerio = require("cheerio");
 
 var db = require("./models")
 
-var PORT = 3000;
+var PORT = process.env.PORT || 3000;
 
 var app = express();
 
@@ -24,13 +24,13 @@ mongoose.connect(MONGODB_URI);
 
 app.get("/scrape", function(request, reply) {
 
-    axios.get("https://pitchfork.com/reviews/best/albums/").then(function(response) {
+    axios.get("https://pitchfork.com/reviews/albums/").then(function(response) {
      
-      var $ = cheerio.load(response.data);
+      const $ = cheerio.load(response.data);
 
       $(".review").each(function(i, element) {
        
-        var result = {}
+        const result = {}
 
         result.artist = $(this)
         .find(".review__title-artist")
@@ -75,7 +75,7 @@ app.get("/scrape", function(request, reply) {
           });
       });
   
-      
+      reply.send("Scrape Complete");
     });
   });
 
@@ -90,7 +90,7 @@ app.get("/scrape", function(request, reply) {
     })
   });
 
-  app.get("/articles/:id", function(request, reply) {
+  app.get("/reviews/:id", function(request, reply) {
 
     db.Review.find({$set: {_id: request.params.id}})
     .populate("note")
@@ -102,9 +102,9 @@ app.get("/scrape", function(request, reply) {
     })
   });
 
-  app.post("/articles/:id", function(request, reply) {
+  app.post("/reviews/:id", function(request, reply) {
 
-    db.Note.create(request.body)
+    db.Note.creadte(request.body)
     .then(function(dbNote){
       return db.Article.findOneAndUpdate({_id: request.params.id}, {$push: {notes: dbNote._id}});
     })
