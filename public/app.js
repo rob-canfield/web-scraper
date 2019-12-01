@@ -1,11 +1,31 @@
-// Grab the articles as a json
+
+
 $.getJSON("/reviews", function(data) {
- 
-  data.map(() => {
-    
-  })
+  data.forEach(() => {
+    $("#reviews").append(
+      `<div class="card">
+      <img class="album-art" src="${data.image}" alt="${data.album} album art">
+      <p class="published-date">${data.date}</p>
+      <h2 class="artist">${data.artist}</h2>
+      <h4 class="album-title">${data.album}</h4>
+      <h6 class="genre">${data.genre}</h6>
+      <p id="author">by: ${data.author}</p>
+      <a href="${data.link}" target="_blank"><button class="read-article">Read Article</button></a>
+      <button class="make-notes">Make Notes</button>
+      </div>`
+    );
+  });
 });
 
+
+
+
+      
+      
+      
+      
+      
+      
 
 // Whenever someone clicks a p tag
 $(document).on("click", "p", function() {

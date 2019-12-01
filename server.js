@@ -30,7 +30,7 @@ app.get("/scrape", function(request, reply) {
 
       $(".review").each(function(i, element) {
        
-        const result = {}
+        const result = {}  
 
         result.artist = $(this)
         .find(".review__title-artist")
@@ -51,7 +51,6 @@ app.get("/scrape", function(request, reply) {
         .attr("src");
 
         result.link = "https://pitchfork.com/" + $(this)
-        .find(".review")
         .children("a")
         .attr("href");
 
@@ -66,8 +65,8 @@ app.get("/scrape", function(request, reply) {
 
         db.Review.create(result)
           .then(function(dbReview) {
-            console.log(dbReview);
-            reply.send("it's working")
+
+            reply.json(dbReview);
           })
           .catch(function(err) {
             // If an error occurred, log it
@@ -75,7 +74,7 @@ app.get("/scrape", function(request, reply) {
           });
       });
   
-      reply.send("Scrape Complete");
+      reply.json(result);
     });
   });
 
