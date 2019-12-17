@@ -41,7 +41,7 @@ var ReviewSchema = new Schema({
 });
 
 // This creates our model from the above schema, using mongoose's model method
-var Review = mongoose.model("Article", ReviewSchema);
+var Review = mongoose.model("Review", ReviewSchema);
 
 // Export the Article model
 module.exports = Review;

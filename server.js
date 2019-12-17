@@ -23,13 +23,10 @@ var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/mongoHeadlines
 mongoose.connect(MONGODB_URI);
 
 app.get("/scrape", function(request, reply) {
-
+ 
     axios.get("https://pitchfork.com/reviews/albums/").then(function(response) {
-     
       const $ = cheerio.load(response.data);
-
       $(".review").each(function(i, element) {
-       
         const result = {}  
 
         result.artist = $(this)
@@ -62,24 +59,25 @@ app.get("/scrape", function(request, reply) {
         result.date = $(this)
         .find(".pub-date")
         .text();
-
+      
         db.Review.create(result)
           .then(function(dbReview) {
-
-            reply.json(dbReview);
+            
+            
           })
           .catch(function(err) {
             // If an error occurred, log it
             console.log(err);
           });
       });
-  
-      reply.json(result);
+
+
+      reply.redirect("/");
     });
   });
 
   app.get("/reviews", function(request, reply) {
-    // TODO: Finish the route so it grabs all of the articles
+    
     db.Review.find({})
     .then(function(dbReview){
       reply.json(dbReview)
@@ -91,7 +89,7 @@ app.get("/scrape", function(request, reply) {
 
   app.get("/reviews/:id", function(request, reply) {
 
-    db.Review.find({$set: {_id: request.params.id}})
+    db.Review.findOne({_id: request.params.id})
     .populate("note")
     .then(function(dbReview){
       reply.json(dbReview)
@@ -102,11 +100,17 @@ app.get("/scrape", function(request, reply) {
   });
 
   app.post("/reviews/:id", function(request, reply) {
-
-    db.Note.creadte(request.body)
+    db.Note.create(request.body)
     .then(function(dbNote){
-      return db.Article.findOneAndUpdate({_id: request.params.id}, {$push: {notes: dbNote._id}});
+      
+      return db.Review.findOneAndUpdate({_id: request.params.id}, {$set:{note: dbNote._id}});
     })
+    .then(function(dbReview) {
+      reply.json(dbReview);
+    })
+    .catch(function(error) {
+      reply.json(error);
+    });
   });
 
   app.listen(PORT, function() {

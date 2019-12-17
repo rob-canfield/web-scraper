@@ -1,4 +1,4 @@
 module.exports = {
-  Review: require("./Review"),
-  Note: require("./Note")
+  Review: require("../models/Review"),
+  Note: require("../models/Note")
 };
